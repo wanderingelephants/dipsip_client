@@ -14,5 +14,6 @@ services:
       # This volume mounts your local data directory to the container.
       # The `DATA_ROOT_FOLDER` in your .env must match the path on your machine.
       # This is crucial for the `check_token_validity.js` script to find the file.
-      - ${DATA_ROOT_FOLDER}:${DATA_ROOT_FOLDER}
+      - ./.env:/.env
+      - ${DATA_ROOT_FOLDER:-/home/user/data}:/app/data
     restart: unless-stopped
