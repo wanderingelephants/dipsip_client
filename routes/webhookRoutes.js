@@ -21,7 +21,7 @@ if (!DATA_ROOT_FOLDER) {
 async function checkTokenValidity() {
     try {
         const dateStr = DateTime.now().toFormat('yyyy-LL-dd');
-        const tokenFilePath = path.join(DATA_ROOT_FOLDER, `access_token_${dateStr}.json`);
+        const tokenFilePath = path.join(DATA_ROOT_FOLDER, 'kite_access_token', `access_token_${dateStr}.json`);
         console.log(`🔍 Looking for access token file at: ${tokenFilePath}`);
         const access_token_data_content = fs.readFileSync(tokenFilePath, "utf-8");
         const access_token_data = JSON.parse(access_token_data_content);

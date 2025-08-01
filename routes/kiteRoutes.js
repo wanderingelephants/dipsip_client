@@ -48,7 +48,7 @@ router.get('/login/success', async (req, res) => {
         const dateStr = DateTime.now().toFormat('yyyy-LL-dd');
 
         // Ensure the directory exists before writing the file
-        const dirPath = path.join(process.env.DATA_ROOT_FOLDER);
+        const dirPath = path.join(process.env.DATA_ROOT_FOLDER, 'kite_access_token');
         if (!fs.existsSync(dirPath)) {
             console.log(`Creating directory: ${dirPath}`);
             fs.mkdirSync(dirPath, { recursive: true });
