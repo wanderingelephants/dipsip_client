@@ -41,7 +41,7 @@ Build the Docker image for the Node.js application.
 
 Start the container.
 
-The application will be accessible at http://localhost:4000/webhook-path.
+The application will be accessible at http://localhost:4000/webhook/etf.
 
 A volume will be mounted to /usr/src/app/data inside the container, linked to your DATA_ROOT_FOLDER on the host machine.
 
