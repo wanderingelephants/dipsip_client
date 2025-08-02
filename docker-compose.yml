@@ -17,3 +17,14 @@ services:
       - ./.env:/.env
       - ${DATA_ROOT_FOLDER:-/home/user/data}:/app/data
     restart: unless-stopped
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok
+    restart: unless-stopped
+    command: http dipsip-client:4000
+    depends_on:
+      - dipsip-client
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}  # Put this in your .env file  
+    ports:
+      - "4040:4040"   
