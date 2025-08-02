@@ -1,5 +1,5 @@
 dipsip_client
-This repository contains a standalone Node.js Express application designed to serve as a webhook endpoint. It receives signed trade alerts, verifies their authenticity, and then places market orders using the Zerodha Kite API.
+This repository contains a standalone Node.js Express application designed to serve as a webhook endpoint. It receives signed order alerts, verifies their authenticity, and then places market orders using the Zerodha Kite API.
 
 The application is built to be run in a Docker container for a self-contained and easily deployable environment.
 
@@ -12,7 +12,7 @@ Create a file named .env in the root directory and populate it with your configu
 
 cp default.env .env
 
-Ensure WEBHOOK_SECRET is the exact same string you configured in the Dipsip frontend, and KITE_ACCESS_TOKEN_DATA_FOLDER points to a directory on your machine where your Zerodha access token file is stored.
+Ensure WEBHOOK_SECRET is the exact same string you configured in the Dipsip Profile page, and KITE_ACCESS_TOKEN_DATA_FOLDER points to a directory on your machine where your Zerodha access token file is stored.
 
 Create the Access Token File:
 The check_token_validity.js script looks for an access token JSON file in the KITE_ACCESS_TOKEN_DATA_FOLDER. You must create this file manually.
@@ -51,7 +51,7 @@ To stop the running container, press Ctrl+C in your terminal. To stop and remove
 docker-compose down
 
 
-After the app starts go to http://localhost:4040/inspect/http
+After the app starts go to ngrok console at http://localhost:4040/inspect/http
 
 This will reveal your ngrok tunnel URL. Something like https://<randomstring>.ngrok-free.app. 
 
@@ -59,3 +59,26 @@ In Kite dev console specify
 
 1. login call back as https://<randomstring>.ngrok-free.app/kite/login/success
 2. order status callback as https://<randomstring>.ngrok-free.app/kite/order/status
+
+Notes about various env variables
+
+The secret key for verifying webhook signatures.
+This MUST be the exact same string as configured in your Dipsip profile.
+This ensures that any callback you get is coming from DipSip Server and not malicious. DipSip will sign the payload with this secret. (HMAC SHA256 signature)
+WEBHOOK_SECRET="a-very-long-and-secure-secret-string"
+
+
+Get ngrok auth token from https://dashboard.ngrok.com/get-started/setup
+and run this on your shell - ngrok config add-authtoken <NGROK_AUTH_TOKEN>
+NGROK_AUTHTOKEN=<NGROK_AUTH_TOKEN>
+
+#Get these from kite dev console https://developers.kite.trade/apps
+KITE_API_KEY=<YOUR KITE API KEY>
+KITE_API_SECRET=<YOUR KITE SECRET>
+
+You local folder where kite access token will be saved. This access token remains active for one day and is 
+flushed by Brokers every day at 7:30 AM IST. To reuse it during the day, the app code stores it locally.
+You (like everybody else) needs to login every day to refresh the token. https://kite.zerodha.com/connect/login?api_key=<YOUR API KEY>
+
+Create the following folder one time. e.g. /Users/<username>/kite_data or on Windows D:/my_data/kite_data
+KITE_ACCESS_TOKEN_DATA_FOLDER=<Your Local Path>/kite_data
