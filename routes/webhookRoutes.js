@@ -127,6 +127,7 @@ router.post('/etf', async (req, res) => {
 
             console.log(`➡️ Placing MARKET order for ${order.symbol} with quantity ${Math.round(order.quantity)}...`);
             try {
+                //THIS LINE POSTS THE ORDER TO ZERODHA KITE. COMMENT THIS OUT TO JUST PRINT THE ORDER DETAILS
                 const response = await axios.post(KITE_API_URL, postData, { headers });
                 console.log(`✅ Order placed for ${order.symbol}:`, response.data);
                 results.push({ symbol: order.symbol, status: 'success', data: response.data });

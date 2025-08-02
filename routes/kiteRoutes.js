@@ -10,7 +10,12 @@ const fs = require('fs');
 // --- Helper function from your original server.js (if needed by other routes here) ---
 // For this example, checkTokenValidity is used by webhookRoutes, so it's kept external
 // or can be passed as a dependency if strictly coupled.
-
+router.get('/order/status', async (req, res) => {
+    console.log("------------------------------------");
+    console.log('➡️ Received Kite Order Success Callback.');
+    //Process the response if you want to save order status locally
+    
+});
 router.get('/login/success', async (req, res) => {
     console.log("------------------------------------");
     console.log('➡️ Received Kite Login Success Callback.');

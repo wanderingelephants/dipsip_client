@@ -12,12 +12,12 @@ Create a file named .env in the root directory and populate it with your configu
 
 cp default.env .env
 
-Ensure WEBHOOK_SECRET is the exact same string you configured in the Dipsip frontend, and DATA_ROOT_FOLDER points to a directory on your machine where your Zerodha access token file is stored.
+Ensure WEBHOOK_SECRET is the exact same string you configured in the Dipsip frontend, and KITE_ACCESS_TOKEN_DATA_FOLDER points to a directory on your machine where your Zerodha access token file is stored.
 
 Create the Access Token File:
-The check_token_validity.js script looks for an access token JSON file in the DATA_ROOT_FOLDER. You must create this file manually.
+The check_token_validity.js script looks for an access token JSON file in the KITE_ACCESS_TOKEN_DATA_FOLDER. You must create this file manually.
 
-Assuming today's date is 2023-10-27, you would create a file named access_token_2023-10-27.json inside the directory you specified in DATA_ROOT_FOLDER.
+Assuming today's date is 2023-10-27, you would create a file named access_token_2023-10-27.json inside the directory you specified in KITE_ACCESS_TOKEN_DATA_FOLDER.
 
 Example access_token_2023-10-27.json:
 
@@ -43,9 +43,19 @@ Start the container.
 
 The application will be accessible at http://localhost:4000/webhook/etf.
 
-A volume will be mounted to /usr/src/app/data inside the container, linked to your DATA_ROOT_FOLDER on the host machine.
+A volume will be mounted to /usr/src/app/data inside the container, linked to your KITE_ACCESS_TOKEN_DATA_FOLDER on the host machine.
 
 Stopping the Application
 To stop the running container, press Ctrl+C in your terminal. To stop and remove the container, run:
 
 docker-compose down
+
+
+After the app starts go to http://localhost:4040/inspect/http
+
+This will reveal your ngrok tunnel URL. Something like https://<randomstring>.ngrok-free.app. 
+
+In Kite dev console specify 
+
+1. login call back as https://<randomstring>.ngrok-free.app/kite/login/success
+2. order status callback as https://<randomstring>.ngrok-free.app/kite/order/status

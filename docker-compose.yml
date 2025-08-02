@@ -12,10 +12,10 @@ services:
       - DATA_ROOT_FOLDER=${DATA_ROOT_FOLDER}
     volumes:
       # This volume mounts your local data directory to the container.
-      # The `DATA_ROOT_FOLDER` in your .env must match the path on your machine.
+      # The `KITE_ACCESS_TOKEN_DATA_FOLDER` in your .env must match the path on your machine.
       # This is crucial for the `check_token_validity.js` script to find the file.
       - ./.env:/.env
-      - ${DATA_ROOT_FOLDER:-/home/user/data}:/app/data
+      - ${KITE_ACCESS_TOKEN_DATA_FOLDER:-~}:/app/data
     restart: unless-stopped
   ngrok:
     image: ngrok/ngrok:latest

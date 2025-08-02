@@ -2,7 +2,7 @@
 
 require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
-const path = require('path');
+const { cleanOldAccessTokenFiles } = require('./cleanOldAccessTokenFiles');
 
 // Import the route modules
 const kiteRoutes = require('./routes/kiteRoutes');
@@ -25,7 +25,7 @@ if (!WEBHOOK_SECRET) {
 }
 console.log("✅ Webhook server starting. WEBHOOK_SECRET is configured.");
 
-
+cleanOldAccessTokenFiles();
 // --- IMPORTANT for Webhook Signature Verification ---
 app.use(express.json({
   verify: (req, res, buf) => {
