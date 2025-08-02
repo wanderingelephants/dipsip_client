@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  dipsip-client:
+    build: .
+    container_name: dipsip-client
+    ports:
+      - "4000:4000" # Keep this if you need host access to 4000
+    environment:
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
+      - DATA_ROOT_FOLDER=${DATA_ROOT_FOLDER}
+      # IMPORTANT: Ensure your application inside this container listens on 0.0.0.0:4000
+      # For Node.js (common for webhooks): app.listen(process.env.PORT || 4000, '0.0.0.0');
+      # If your app explicitly binds to 127.0.0.1, it won't be reachable from other containers.
+    volumes:
+      - ./.env:/.env
+      - ${KITE_ACCESS_TOKEN_DATA_FOLDER:-~}:/app/data
+    restart: unless-stopped
+    networks: # ADDED: Attach dipsip-client to the shared network
+      - dipsip_inter_service_network
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok
+    restart: unless-stopped
+    # The command 'http dipsip-client:4000' already uses the service name, which is good.
+    command: http dipsip-client:4000
+    depends_on:
+      - dipsip-client
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    ports:
+      - "4040:4040"
+    networks: # ADDED: Attach ngrok to the shared network
+      - dipsip_inter_service_network
+
+networks: # ADDED: Declare the external network
+  dipsip_inter_service_network:
+    external: true

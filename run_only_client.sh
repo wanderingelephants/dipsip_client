@@ -1,1 +1,1 @@
-docker-compose up -d --build dipsip-client
+docker-compose -f docker-compose.client.yml up -d --build dipsip-client
