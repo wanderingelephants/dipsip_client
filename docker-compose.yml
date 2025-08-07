@@ -17,6 +17,8 @@ services:
       - ./.env:/.env
       - ${KITE_ACCESS_TOKEN_DATA_FOLDER:-~}:/app/data
     restart: unless-stopped
+    networks:
+      - dipsip_inter_service_network
   ngrok:
     image: ngrok/ngrok:latest
     container_name: ngrok
@@ -27,4 +29,9 @@ services:
     environment:
       - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}  # Put this in your .env file  
     ports:
-      - "4040:4040"   
+      - "4040:4040"
+    networks:
+      - dipsip_inter_service_network  
+networks: # ADDED: Declare the external network
+  dipsip_inter_service_network:
+    external: true      
