@@ -7,17 +7,24 @@ const path = require('path');
 const fs = require('fs');
 const { DateTime } = require('luxon');
 
-// --- Your customer's `check_token_validity.js` logic moved here or kept as a utility ---
-// For demonstration, let's keep it here for now as it's directly used by this route.
-// In a larger app, you might move this into a `utils` or `services` folder.
+// --- Centralized Configuration and Utilities ---
 const DATA_ROOT_FOLDER = process.env.DATA_ROOT_FOLDER;
 if (!DATA_ROOT_FOLDER) {
-    // This check is duplicated, ideally moved to an init script or main server.js
     console.error("CRITICAL ERROR: DATA_ROOT_FOLDER is not set in environment variables!");
-    // You might want to throw an error here instead of process.exit in a route file
-    // or ensure this check happens before routes are loaded.
+    // In a real application, you might want to exit the process or throw an error
+    // here to prevent the server from starting with a bad configuration.
 }
 
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+if (!WEBHOOK_SECRET) {
+    console.error("CRITICAL ERROR: WEBHOOK_SECRET environment variable is not set!");
+    // Same as above, a critical error that should stop server initialization.
+}
+
+/**
+ * Checks for a valid access token file and returns its content.
+ * @returns {Promise<object|null>} The parsed access token data or null if not found.
+ */
 async function checkTokenValidity() {
     try {
         const dateStr = DateTime.now().toFormat('yyyy-LL-dd');
@@ -32,32 +39,32 @@ async function checkTokenValidity() {
     }
 }
 
-// Get WEBHOOK_SECRET here as well, as this file needs it for verification.
-// Again, ideally, this is loaded once globally or passed as a dependency.
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
-if (!WEBHOOK_SECRET) {
-    console.error("CRITICAL ERROR: WEBHOOK_SECRET environment variable is not set!");
-    // Similar to DATA_ROOT_FOLDER, consider how to handle this in a modular way.
-}
 
-router.post('/etf', async (req, res) => {
+// --- Middleware for Webhook Signature Validation ---
+/**
+ * Express middleware to validate the signature of incoming webhook requests.
+ * It checks for required headers, timestamp validity, and HMAC signature.
+ * If validation fails, it sends an appropriate error response and stops the request chain.
+ * If successful, it calls next() to pass control to the route handler.
+ */
+function validateWebhookSignature(req, res, next) {
     console.log("------------------------------------");
-    console.log('➡️ Received Webhook Request.');
+    console.log('➡️ Starting Webhook Signature Validation...');
 
-    // --- 1. Webhook Signature Verification ---
-    const signatureHeader = req.headers['x-yourapp-signature'];
-    const timestampHeader = req.headers['x-yourapp-timestamp'];
-    const rawBody = req.rawBody; // rawBody is added by the main app.use(express.json) middleware
+    const signatureHeader = req.headers['x-dipsip-signature'];
+    const timestampHeader = req.headers['x-dipsip-timestamp'];
+    // Assuming 'rawBody' is added by a middleware like `express.json({ verify: ... })`
+    const rawBody = req.rawBody;
 
     if (!signatureHeader || !timestampHeader || typeof rawBody === 'undefined') {
-        console.error('❌ Webhook: Missing signature, timestamp, or raw body in request.');
+        console.error('❌ Webhook: Missing signature, timestamp, or raw body.');
         return res.status(400).send('Bad Request: Missing required webhook headers or body.');
     }
 
     const [signatureVersion, signature] = signatureHeader.split('=');
 
     if (signatureVersion !== 'v1' || !signature) {
-        console.error('❌ Webhook: Invalid signature format or version in header.');
+        console.error('❌ Webhook: Invalid signature format or version.');
         return res.status(400).send('Bad Request: Invalid signature format.');
     }
 
@@ -75,12 +82,31 @@ router.post('/etf', async (req, res) => {
     const expectedSignature = hmac.digest('hex');
 
     if (expectedSignature !== signature) {
-        console.error('❌ Webhook: Signature mismatch. Request is not authentic or has been tampered with.');
+        console.error('❌ Webhook: Signature mismatch. Request is not authentic.');
         return res.status(401).send('Unauthorized: Invalid signature.');
     }
-    console.log('✅ Webhook: Signature verified successfully. Request is authentic.');
 
-    // --- 2. Order Placement Logic (only if signature is valid) ---
+    console.log('✅ Webhook: Signature verified successfully.');
+    // If validation passes, move to the next middleware or route handler
+    next();
+}
+
+
+// --- Refactored Routes using the middleware ---
+
+// The /ping route now only contains its specific logic.
+// The signature validation is handled by the middleware.
+router.post('/ping', validateWebhookSignature, async (req, res) => {
+    console.log('➡️ Received Webhook Ping Request (Signature OK).');
+    res.status(200).json({ message: 'Pong from DipSipClient' });
+    console.log("------------------------------------");
+});
+
+// The /etf route now only contains its specific logic.
+// The signature validation is handled by the middleware.
+router.post('/etf', validateWebhookSignature, async (req, res) => {
+    console.log('➡️ Received Webhook ETF Request (Signature OK).');
+
     try {
         const orders = req.body;
         if (!Array.isArray(orders) || orders.length === 0) {
